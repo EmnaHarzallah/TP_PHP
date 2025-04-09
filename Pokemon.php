@@ -57,7 +57,7 @@ class PokemonFeu extends Pokemon {
         parent::__construct($name, $url, $hp, "Feu", $attackPokemon);
     }
 
-    // Fire-type attack: 2x vs Grass, 0.5x vs Water/Fire, 1x vs Normal
+    
     function attack(Pokemon $defender): int {
         // Calcul des dégâts de base
         $damage = rand($this->attackPokemon->getAttackMinimal(), $this->attackPokemon->getAttackMaximal());

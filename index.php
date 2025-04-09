@@ -6,7 +6,7 @@ $attack = new AttackPokemon(100, 420, 2, 20);
 $pokemon1 = new PokemonFeu("Dracaufeu", "https://assets.pokemon.com/assets/cms2/img/pokedex/full/006.png", 200, "Feu" , $attack);
 
 $attack2 = new AttackPokemon(100, 350, 4, 20);
-$pokemon2 = new PokemonEau("DracauWater", "https://www.pokebip.com/membres/galeries/1698/1698797421018135400.png", 200, "Eau" ,  $attack2);
+$pokemon2 = new PokemonEau("DracauWater", "https://www.pokebip.com/membres/galeries/1698/1698797421018135400.png", 200, "Feu" , $attack2);
 
 $battleLog = [];
 
