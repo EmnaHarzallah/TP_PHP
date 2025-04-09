@@ -1,10 +1,11 @@
 <?php
 
-class AttackPokemon { 
-    private int $attackMinimal ;
-    private int $attackMaximal ; 
-    private int $specialAttack ; 
-    private int $probabilitySpecialAttack  ;
+class AttackPokemon {
+    private int $attackMinimal;
+    private int $attackMaximal;
+    private int $specialAttack;
+    private int $probabilitySpecialAttack;
+
     function __construct(int $attackMinimal, int $attackMaximal, int $specialAttack, int $probabilitySpecialAttack) {
         $this->attackMinimal = $attackMinimal;
         $this->attackMaximal = $attackMaximal;
@@ -12,125 +13,117 @@ class AttackPokemon {
         $this->probabilitySpecialAttack = $probabilitySpecialAttack;
     }
 
-    function getSpecialAttack(): int {
-        return $this->specialAttack;
+    function getSpecialAttack(): int { return $this->specialAttack; }
+    function getProbabilitySpecialAttack(): int { return $this->probabilitySpecialAttack; }
+    function getAttackMinimal(): int { return $this->attackMinimal; }
+    function getAttackMaximal(): int { return $this->attackMaximal; }
+}
+
+class Pokemon {
+    protected string $name;
+    protected string $url;
+    protected int $hp;
+    protected string $type = "Normal";
+    protected AttackPokemon $attackPokemon;
+
+    function __construct(string $name, string $url, int $hp, string $type, AttackPokemon $attackPokemon) {
+        $this->name = $name;
+        $this->url = $url;
+        $this->hp = $hp;
+        $this->type = $type;
+        $this->attackPokemon = $attackPokemon;
     }
 
-    function getProbabilitySpecialAttack(): int {
-        return $this->probabilitySpecialAttack;
-    }
+    function getName(): string { return $this->name; }
+    function getURL(): string { return $this->url; }
+    function getHP(): int { return $this->hp; }
+    function getType(): string { return $this->type; }
+    function setHP(int $hp) { $this->hp = max(0, $hp); }
+    function displayImage() { echo "<img src='{$this->url}' alt='{$this->name}' width='100'>"; }
 
-    function getAttackMinimal(): int {
-        return $this->attackMinimal;
-    }
-
-    function getAttackMaximal(): int {
-        return $this->attackMaximal;
+    // Base attack method for Normal-type Pokémon (1x damage to all)
+    function attack(Pokemon $defender): int {
+        $damage = rand($this->attackPokemon->getAttackMinimal(), $this->attackPokemon->getAttackMaximal());
+        if (rand(0, 100) <= $this->attackPokemon->getProbabilitySpecialAttack()) {
+            $damage *= $this->attackPokemon->getSpecialAttack();
+        }
+        $defender->setHP($defender->getHP() - $damage);
+        return $damage;
     }
 }
 
-
-    class Pokemon { 
-        protected string $name ; 
-        protected string $url ; 
-        protected int $hp ; 
-        protected string $type="Normal" ;
-        protected AttackPokemon $attackPokemon ;
-
-        function __construct(string $name, string $url, int $hp, string $type ,AttackPokemon $attackPokemon) {
-            $this->name = $name;
-            $this->url = $url;
-            $this->type = $type;
-            $this->hp = $hp;
-            $this->attackPokemon = new AttackPokemon($attackPokemon->getAttackMinimal(), $attackPokemon->getAttackMaximal(), $attackPokemon->getSpecialAttack(), $attackPokemon->getProbabilitySpecialAttack());
-        }
-        function getName(): string {
-            return $this->name;
-        }
-        function getURL(): string {
-            return $this->url;
-        }
-        function getHP(): int {
-            return $this->hp;
-        }
-        function getAttackPokemon(): AttackPokemon {
-            return $this->attackPokemon;
-        }
-        function setName(string $name){
-            $this->name=$name ; 
-        }
-        function setURL(string $url){ 
-            $this->url=$url ; 
-        }
-        function setHP(int $hp){ 
-            $this->hp=$hp ; 
-        }
-        function setAttackPokemon(AttackPokemon $attackPokemon){ 
-            $this->attackPokemon=$attackPokemon ; 
-        }
-
-        function whoAmI() {
-            echo ("Je suis " . $this->name . " avec " . $this->hp . " HP et je fais des attaques entre " . $this->attackPokemon->getAttackMinimal() . 
-            " et " . $this->attackPokemon->getAttackMaximal() . " points de dégâts\n");
-        }
-        
-
-        function attack(Pokemon $p) {
-            $attackpoints = rand($this->attackPokemon->getAttackMinimal(), $this->attackPokemon->getAttackMaximal());
-            $chance = rand(0, 100); 
-            if ($chance <= $this->attackPokemon->getProbabilitySpecialAttack()) {
-                $attackpoints *= $this->attackPokemon->getSpecialAttack(); 
-                echo $this->name . " effectue une attaque spéciale\n"; 
-            }
-            $p->setHP($p->getHP() - $attackpoints);
-            echo $this->name . " attaque " . $p->getName() . "\n";
-            echo $p->getName() . " a maintenant " . $p->getHP() . " HP\n";
-    
-            $p->setHP($p->getHP() - $attackpoints);
-            echo($this->name . " attaque " . $p->getName());
-            echo($p->getName() . " a maintenant " . $p->getHP() . " HP");
-        }
+class PokemonFeu extends Pokemon {
+    function __construct(string $name, string $url, int $hp, string $type , AttackPokemon $attackPokemon) {
+        parent::__construct($name, $url, $hp, "Feu", $attackPokemon);
     }
 
+    // Fire-type attack: 2x vs Grass, 0.5x vs Water/Fire, 1x vs Normal
+    function attack(Pokemon $defender): int {
+        $damage = rand($this->attackPokemon->getAttackMinimal(), $this->attackPokemon->getAttackMaximal());
+        if (rand(0, 100) <= $this->attackPokemon->getProbabilitySpecialAttack()) {
+            $damage *= $this->attackPokemon->getSpecialAttack();
+        }
 
-    class PokemonFeu extends Pokemon{ 
-        function __construct(string $name, string $url, int $hp, string $type , AttackPokemon $attackPokemon) {
-            parent::__construct($name, $url, $hp, "Feu", $attackPokemon);
+        $typeMultiplier = 1.0;
+        if ($defender->getType() === "Plante") {
+            $typeMultiplier = 2.0; // Super effective against Grass
+        } elseif ($defender->getType() === "Eau" || $defender->getType() === "Feu") {
+            $typeMultiplier = 0.5; // Not very effective against Water or Fire
         }
-        
-        function whoAmI(){ 
-            echo("Je suis un pokemon de type feu") ; 
-            parent::whoAmI() ; 
-        }
+
+        $damage = (int)($damage * $typeMultiplier);
+        $defender->setHP($defender->getHP() - $damage);
+        return $damage;
     }
-    
-    class PokemonEau extends Pokemon{ 
-        function __construct(string $name, string $url, int $hp, string $type , AttackPokemon $attackPokemon) {
-            parent::__construct($name, $url, $hp , "Eau" , $attackPokemon);
-        }
-    
-        function attack(Pokemon $p){
-            parent::attack($p); 
-            if ($p instanceof PokemonPlante) { 
-                echo $this->name . " attaque " . $p->getName() . " avec une attaque spéciale\n"; 
-                $p->setHP($p->getHP() - (int)($p->getHP() / 2)); 
-                echo $p->getName() . " a maintenant " . $p->getHP() . " HP\n";
-            }
-        
-                $p->setHP($p->getHP() - (int)($p->getHP() / 2)); 
-                echo $p->getName() . " a maintenant " . $p->getHP() . " HP\n";
-            
-        }}
+}
 
-    class PokemonPlante extends Pokemon{ 
-        function __construct(string $name, string $url, int $hp, string $type ,AttackPokemon $attackPokemon) {
-            parent::__construct($name, $url, $hp, "Plante",  $attackPokemon);
-        }
-        function whoAmI(){ 
-            echo("Je suis un pokemon de type plante") ; 
-            parent::whoAmI() ; 
-        }
+class PokemonEau extends Pokemon {
+    function __construct(string $name, string $url, int $hp, string $type , AttackPokemon $attackPokemon) {
+        parent::__construct($name, $url, $hp, "Eau", $attackPokemon);
     }
 
+    // Water-type attack: 2x vs Fire, 0.5x vs Water/Grass, 1x vs Normal
+    function attack(Pokemon $defender): int {
+        $damage = rand($this->attackPokemon->getAttackMinimal(), $this->attackPokemon->getAttackMaximal());
+        if (rand(0, 100) <= $this->attackPokemon->getProbabilitySpecialAttack()) {
+            $damage *= $this->attackPokemon->getSpecialAttack();
+        }
+
+        $typeMultiplier = 1.0;
+        if ($defender->getType() === "Feu") {
+            $typeMultiplier = 2.0; // Super effective against Fire
+        } elseif ($defender->getType() === "Eau" || $defender->getType() === "Plante") {
+            $typeMultiplier = 0.5; // Not very effective against Water or Grass
+        }
+
+        $damage = (int)($damage * $typeMultiplier);
+        $defender->setHP($defender->getHP() - $damage);
+        return $damage;
+    }
+}
+
+class PokemonPlante extends Pokemon {
+    function __construct(string $name, string $url, int $hp, string $type , AttackPokemon $attackPokemon) {
+        parent::__construct($name, $url, $hp, "Plante", $attackPokemon);
+    }
+
+    // Grass-type attack: 2x vs Water, 0.5x vs Grass/Fire, 1x vs Normal
+    function attack(Pokemon $defender): int {
+        $damage = rand($this->attackPokemon->getAttackMinimal(), $this->attackPokemon->getAttackMaximal());
+        if (rand(0, 100) <= $this->attackPokemon->getProbabilitySpecialAttack()) {
+            $damage *= $this->attackPokemon->getSpecialAttack();
+        }
+
+        $typeMultiplier = 1.0;
+        if ($defender->getType() === "Eau") {
+            $typeMultiplier = 2.0; // Super effective against Water
+        } elseif ($defender->getType() === "Plante" || $defender->getType() === "Feu") {
+            $typeMultiplier = 0.5; // Not very effective against Grass or Fire
+        }
+
+        $damage = (int)($damage * $typeMultiplier);
+        $defender->setHP($defender->getHP() - $damage);
+        return $damage;
+    }
+}
 ?>
-
