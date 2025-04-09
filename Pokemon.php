@@ -59,20 +59,33 @@ class PokemonFeu extends Pokemon {
 
     // Fire-type attack: 2x vs Grass, 0.5x vs Water/Fire, 1x vs Normal
     function attack(Pokemon $defender): int {
+        // Calcul des dégâts de base
         $damage = rand($this->attackPokemon->getAttackMinimal(), $this->attackPokemon->getAttackMaximal());
+        echo "Base damage: $damage\n";
+    
+        // Application de l'attaque spéciale si la probabilité est respectée
         if (rand(0, 100) <= $this->attackPokemon->getProbabilitySpecialAttack()) {
             $damage *= $this->attackPokemon->getSpecialAttack();
+            echo "Special attack applied! New damage: $damage\n";
         }
-
+    
+        // Calcul du multiplicateur de type
         $typeMultiplier = 1.0;
-        if ($defender->getType() === "Plante") {
-            $typeMultiplier = 2.0; // Super effective against Grass
-        } elseif ($defender->getType() === "Eau" || $defender->getType() === "Feu") {
-            $typeMultiplier = 0.5; // Not very effective against Water or Fire
+        if ($defender->getType() === "Feu") {
+            $typeMultiplier = 2.0; // Super efficace contre le type Feu
+        } elseif ($defender->getType() === "Eau" || $defender->getType() === "Plante") {
+            $typeMultiplier = 0.5; // Pas très efficace contre Eau ou Plante
         }
-
+    
+        // Application du multiplicateur de type
         $damage = (int)($damage * $typeMultiplier);
-        $defender->setHP($defender->getHP() - $damage);
+        echo "Damage after type multiplier ($typeMultiplier): $damage\n";
+    
+        // Mise à jour des HP du défenseur
+        $newHP = $defender->getHP() - $damage;
+        $defender->setHP($newHP);
+        echo "Defender HP after attack: " . $defender->getHP() . "\n";
+    
         return $damage;
     }
 }
@@ -85,19 +98,26 @@ class PokemonEau extends Pokemon {
     // Water-type attack: 2x vs Fire, 0.5x vs Water/Grass, 1x vs Normal
     function attack(Pokemon $defender): int {
         $damage = rand($this->attackPokemon->getAttackMinimal(), $this->attackPokemon->getAttackMaximal());
+        echo "Base damage: $damage\n";
+    
         if (rand(0, 100) <= $this->attackPokemon->getProbabilitySpecialAttack()) {
             $damage *= $this->attackPokemon->getSpecialAttack();
+            echo "Special attack applied! New damage: $damage\n";
         }
-
+    
         $typeMultiplier = 1.0;
-        if ($defender->getType() === "Feu") {
-            $typeMultiplier = 2.0; // Super effective against Fire
-        } elseif ($defender->getType() === "Eau" || $defender->getType() === "Plante") {
-            $typeMultiplier = 0.5; // Not very effective against Water or Grass
+        if ($defender->getType() === "Eau") {
+            $typeMultiplier = 2.0; // Super effective against Water
+        } elseif ($defender->getType() === "Plante" || $defender->getType() === "Feu") {
+            $typeMultiplier = 0.5; // Not very effective against Grass or Fire
         }
-
+    
         $damage = (int)($damage * $typeMultiplier);
+        echo "Damage after type multiplier ($typeMultiplier): $damage\n";
+    
         $defender->setHP($defender->getHP() - $damage);
+        echo "Defender HP after attack: " . $defender->getHP() . "\n";
+    
         return $damage;
     }
 }
